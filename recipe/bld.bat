@@ -29,4 +29,9 @@ if errorlevel 1 exit 1
 copy %LIBRARY_LIB%\libpng16_static.lib %LIBRARY_LIB%\libpng_static.lib
 if errorlevel 1 exit 1
 
+:: matplotlib (and others?) expect a different name, which is also in the
+:: original libpng package in the defaults channel
+copy %LIBRARY_LIB%\libpng16.lib %LIBRARY_LIB%\png.lib
+if errorlevel 1 exit 1
+
 copy %RECIPE_DIR%\libpng-LICENSE.txt %SRC_DIR%\libpng-LICENSE.txt
