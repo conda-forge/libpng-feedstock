@@ -9,27 +9,22 @@ source:
   sha256: 574623a4901a9969080ab4a2df9437026c8a87150dfd5c235e28c94b212964a7
 
 build:
-  number: 0
-  skip: True  # [win and py36]
+  number: 2
   features:
-    - vc9  # [win and py27]
-    - vc14  # [win and (py35 or py36)]
+    - vc{{ vc }}  # [win]
+  run_exports:
+    # SO name changes at minor rev bumps.
+    - {{ pin_subpackage('libpng', max_pin='x.x') }}
 
 requirements:
   host:
-    - zlib 1.2.8
-    - vc 9  # [win and py27]
-    - vc 10  # [win and py34]
-    - vc 14  # [win and (py35 or py36)]
+    - zlib
   build:
     - python  # [win]
     - cmake  # [win]
     - libtool  # [not win]
     - automake  # [not win]
     - {{ compiler('c') }}
-    - zlib 1.2.11
-    - vc 9  # [win and py27]
-    - vc 14  # [win and (py35 or py36)]
 
 test:
   commands:
@@ -55,3 +50,4 @@ about:
 extra:
   recipe-maintainers:
     - ocefpaf
+    - msarahan
