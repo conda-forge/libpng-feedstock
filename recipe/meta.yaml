@@ -17,14 +17,14 @@ build:
     - {{ pin_subpackage('libpng', max_pin='x.x') }}
 
 requirements:
-  host:
-    - zlib
   build:
+    - {{ compiler('c') }}
     - python  # [win]
     - cmake  # [win]
     - libtool  # [not win]
     - automake  # [not win]
-    - {{ compiler('c') }}
+  host:
+    - zlib
 
 test:
   commands:
