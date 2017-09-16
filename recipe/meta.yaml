@@ -19,7 +19,6 @@ build:
 requirements:
   build:
     - {{ compiler('c') }}
-    - python  # [win]
     - cmake  # [win]
     - libtool  # [not win]
     - automake  # [not win]
