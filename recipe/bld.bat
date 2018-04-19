@@ -1,25 +1,20 @@
-mkdir build
-cd build
+mkdir build-%SUBDIR%-%c_compiler%
+cd build-%SUBDIR%-%c_compiler%
 
 :: Configure.
-cmake -G "NMake Makefiles" ^
-      -D CMAKE_INSTALL_PREFIX=%LIBRARY_PREFIX% ^
-      -D ZLIB_LIBRARY=%LIBRARY_LIB%\zlib.lib ^
-      -D ZLIB_INCLUDE_DIR=%LIBRARY_INC% ^
-      -D CMAKE_BUILD_TYPE=Release ^
-      %SRC_DIR%
-if errorlevel 1 exit 1
+cmake -G "%CMAKE_GENERATOR%"                    ^
+      -D CMAKE_INSTALL_PREFIX=%LIBRARY_PREFIX%  ^
+      -D ZLIB_LIBRARY=%LIBRARY_LIB%\zlib.lib    ^
+      -D ZLIB_INCLUDE_DIR=%LIBRARY_INC%         ^
+      -DCMAKE_C_FLAGS="%CFLAGS% -DWIN32"        ^
+      ..
+if errorlevel 1 exit /b 1
 
-:: Build.
-nmake
-if errorlevel 1 exit 1
+cmake --build . --target install --config Release
+if errorlevel 1 exit /b 1
 
 :: Test.
-ctest
-if errorlevel 1 exit 1
-
-:: Install.
-nmake install
+ctest -C Release
 if errorlevel 1 exit 1
 
 :: Make copies of the .lib files without the embedded version number.

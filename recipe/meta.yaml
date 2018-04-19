@@ -9,25 +9,19 @@ source:
   sha256: 574623a4901a9969080ab4a2df9437026c8a87150dfd5c235e28c94b212964a7
 
 build:
-  number: 0
-  skip: True  # [win and py36]
-  features:
-    - vc9  # [win and py27]
-    - vc14  # [win and (py35 or py36)]
+  number: 1
+  run_exports:
+    # SO name changes at minor rev bumps.
+    - {{ pin_subpackage('libpng', max_pin='x.x') }}
 
 requirements:
   build:
-    - python  # [win]
+    - {{ compiler('c') }}
     - cmake  # [win]
     - libtool  # [not win]
     - automake  # [not win]
-    - zlib 1.2.11
-    - vc 9  # [win and py27]
-    - vc 14  # [win and (py35 or py36)]
-  run:
-    - zlib 1.2.11
-    - vc 9  # [win and py27]
-    - vc 14  # [win and (py35 or py36)]
+  host:
+    - zlib
 
 test:
   commands:
@@ -41,9 +35,16 @@ test:
 about:
   home: http://www.libpng.org/pub/png/libpng.html
   license: zlib/libpng
-  summary: 'PNG reference library.'
   license_file: LICENSE
+  license_url: http://www.libpng.org/pub/png/src/libpng-LICENSE.txt
+  summary: 'PNG reference library.'
+  description: |
+    libpng is the official PNG reference library. It supports almost all PNG
+    features, is extensible, and has been extensively tested for over 20 years.
+  doc_url: http://www.libpng.org/pub/png/libpng.html
+  dev_url: https://sourceforge.net/p/libpng/code/ci/libpng16/tree/
 
 extra:
   recipe-maintainers:
     - ocefpaf
+    - msarahan
