@@ -21,10 +21,11 @@ requirements:
   build:
     - make  # [unix]
     - cmake  # [win]
-    - m2-patch  # [win]
     - libtool  # [not win]
     - automake  # [not win]
     - {{ compiler('c') }}
+    - m2-patch  # [win]
+    - patch     # [not win]
   host:
     - zlib
   run:
