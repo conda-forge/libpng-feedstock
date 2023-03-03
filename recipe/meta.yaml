@@ -39,6 +39,7 @@ test:
     - test -f ${PREFIX}/lib/libpng.a  # [not win]
     - test -f ${PREFIX}/lib/libpng${SHLIB_EXT}  # [not win]
     - libpng-config --version  # [not win]
+    - echo "tests done during build ..."  # [win]
 
 about:
   home: http://www.libpng.org/pub/png/libpng.html
