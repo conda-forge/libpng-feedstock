@@ -16,7 +16,6 @@ Documentation: http://www.libpng.org/pub/png/libpng.html
 libpng is the official PNG reference library. It supports almost all PNG
 features, is extensible, and has been extensively tested for over 20 years.
 
-
 Current build status
 ====================
 
@@ -212,6 +211,7 @@ In order to produce a uniquely identifiable distribution:
 Feedstock Maintainers
 =====================
 
+* [@baszalmstra](https://github.com/baszalmstra/)
 * [@msarahan](https://github.com/msarahan/)
 * [@ocefpaf](https://github.com/ocefpaf/)
 * [@pkgw](https://github.com/pkgw/)
