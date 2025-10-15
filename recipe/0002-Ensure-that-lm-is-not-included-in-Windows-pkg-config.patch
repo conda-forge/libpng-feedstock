@@ -11,19 +11,19 @@ diff --git a/CMakeLists.txt b/CMakeLists.txt
 index 25e9e4d4e..649698ff6 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -825,7 +825,11 @@ if(1)
-   set(exec_prefix ${CMAKE_INSTALL_PREFIX})
-   set(libdir      ${CMAKE_INSTALL_FULL_LIBDIR})
-   set(includedir  ${CMAKE_INSTALL_FULL_INCLUDEDIR})
--  set(LIBS        "-lz -lm")
+@@ -1022,7 +1022,11 @@
+   set(exec_prefix "${CMAKE_INSTALL_PREFIX}")
+   set(libdir "${CMAKE_INSTALL_FULL_LIBDIR}")
+   set(includedir "${CMAKE_INSTALL_FULL_INCLUDEDIR}")
+-  set(LIBS "-lz -lm")
 +  if(NOT "${M_LIBRARY}" STREQUAL "")
 +    set(LIBS        "-lz -lm")
 +  else()
 +    set(LIBS        "-lz")
 +  endif()
-   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/libpng.pc.in
-     ${CMAKE_CURRENT_BINARY_DIR}/${PNGLIB_NAME}.pc @ONLY)
-   create_symlink(libpng.pc FILE ${PNGLIB_NAME}.pc)
+   configure_file("${CMAKE_CURRENT_SOURCE_DIR}/libpng.pc.in"
+                  "${CMAKE_CURRENT_BINARY_DIR}/libpng${PNGLIB_ABI_VERSION}.pc"
+                  @ONLY)
 -- 
 2.34.1
 
