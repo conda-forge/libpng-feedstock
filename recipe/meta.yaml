@@ -1,4 +1,4 @@
-{% set version = "1.6.39" %}
+{% set version = "1.6.50" %}
 
 package:
   name: libpng
@@ -6,11 +6,10 @@ package:
 
 source:
   url: https://download.sourceforge.net/libpng/libpng-{{ version }}.tar.gz
-  sha256: af4fb7f260f839919e5958e5ab01a275d4fe436d45442a36ee62f73e5beb75ba
+  sha256: 708f4398f996325819936d447f982e0db90b6b8212b7507e7672ea232210949a
   patches:
     - 0001-Include-pkg-config-files-in-the-Windows-packages-too.patch
     - 0002-Ensure-that-lm-is-not-included-in-Windows-pkg-config.patch
-    - libpng-arm-free.patch  # [linux and aarch64]
 
 build:
   number: 0
@@ -22,7 +21,7 @@ build:
 requirements:
   build:
     - make      # [unix]
-    - cmake     # [win]
+    - cmake >=3.14     # [win]
     - m2-patch  # [win]
     - patch     # [not win]
     - ninja     # [win]
