@@ -14,11 +14,13 @@ source:
   patches:
     - patches/0001-Include-pkg-config-files-in-the-Windows-packages-too.patch
     - patches/0002-Ensure-that-lm-is-not-included-in-Windows-pkg-config.patch
+    # Patch shared for comments upstream
+    # https://github.com/pnggroup/libpng/issues/205#issuecomment-3477109556
+    - patches/0003-Use-zlib-ng-instead-of-zlib.patch
+    - patches/0004_one_more.patch
 
 build:
-  number: 1
-  skip: 
-  - win and vc<14
+  number: 2
 
 requirements:
   build:
@@ -34,7 +36,7 @@ requirements:
         - libtool
         - automake
   host:
-    - zlib
+    - zlib-ng
   run_exports:
     - ${{ pin_subpackage('libpng', upper_bound='x.x') }}
 

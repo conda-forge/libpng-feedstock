@@ -1,0 +1,35 @@
+diff --git a/scripts/pnglibconf.dfa b/scripts/pnglibconf.dfa
+index f466da1..9f9cd56 100644
+--- a/scripts/pnglibconf.dfa
++++ b/scripts/pnglibconf.dfa
+@@ -343,7 +343,7 @@ option MIPS_MMI_CHECK disabled requires ALIGNED_MEMORY,
+ # The TEXT values are the defaults when writing compressed text (all forms)
+ 
+ # Include the zlib header so that the defaults below are known
+-@#  include <zlib.h>
++@#  include <zlib-ng.h>
+ 
+ # The '@' here means to substitute the value when pnglibconf.h is built
+ setting Z_DEFAULT_COMPRESSION default @Z_DEFAULT_COMPRESSION
+@@ -351,7 +351,6 @@ setting Z_DEFAULT_COMPRESSION default @Z_DEFAULT_COMPRESSION
+ # appropriate for PNG images, maybe it doesn't exist in all versions?
+ setting Z_DEFAULT_STRATEGY default @Z_FILTERED
+ setting Z_DEFAULT_NOFILTER_STRATEGY default @Z_DEFAULT_STRATEGY
+-setting ZLIB_VERNUM default @ZLIB_VERNUM
+ 
+ # Linkage of:
+ #
+@@ -434,13 +433,6 @@ option BENIGN_READ_ERRORS requires BENIGN_ERRORS
+ # option were turned on.
+ option DISABLE_ADLER32_CHECK requires READ enables SET_OPTION disabled
+ 
+-# ZLIB_VERNUM must be used here, not PNG_ZLIB_VERNUM, because
+-# scripts/options.awk ends up putting this test adhead of the setting of
+-# PNG_ZLIB_VERNUM (apparently above, but not because of the two-pass processing)
+-@#if ZLIB_VERNUM < 0x1290
+-@#   define PNG_NO_DISABLE_ADLER32_CHECK
+-@#endif
+-
+ # Generic options - affect both read and write.
+ 
+ option MNG_FEATURES

@@ -1,0 +1,667 @@
+From e7d91830da1fdde91fed0257df1dc9a358508da0 Mon Sep 17 00:00:00 2001
+From: Mark Harfouche <mark.harfouche@gmail.com>
+Date: Sat, 1 Nov 2025 21:21:18 -0400
+Subject: [PATCH] Use zlib-ng instead of zlib
+
+---
+ configure                    | 25 ++++++++++-----------
+ contrib/libtests/pngvalid.c  |  8 +++----
+ contrib/tools/png-fix-itxt.c |  8 +++----
+ contrib/tools/pngcp.c        |  2 +-
+ contrib/tools/pngfix.c       | 42 ++++++++----------------------------
+ example.c                    |  1 -
+ png.c                        |  6 +++---
+ pngpriv.h                    | 20 -----------------
+ pngread.c                    |  2 +-
+ pngrutil.c                   | 22 +++++--------------
+ pngstruct.h                  | 28 +++---------------------
+ pngtest.c                    | 12 +++++------
+ pngwrite.c                   |  2 +-
+ pngwutil.c                   | 10 ++++-----
+ 14 files changed, 55 insertions(+), 133 deletions(-)
+
+diff --git a/configure b/configure
+index 5d0c324..72693be 100755
+--- a/configure
++++ b/configure
+@@ -14899,16 +14899,17 @@ else case e in #(
+ esac
+ fi
+ 
+-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for zlibVersion in -lz" >&5
+-printf %s "checking for zlibVersion in -lz... " >&6; }
++{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for zlibVersion in -lz-ng" >&5
++printf %s "checking for zlibVersion in -lz-ng... " >&6; }
+ if test ${ac_cv_lib_z_zlibVersion+y}
+ then :
+   printf %s "(cached) " >&6
+ else case e in #(
+   e) ac_check_lib_save_LIBS=$LIBS
+-LIBS="-lz  $LIBS"
++LIBS="-lz-ng  $LIBS"
+ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ /* end confdefs.h.  */
++#include <zlib-ng.h>
+ 
+ /* Override any GCC internal prototype to avoid an error.
+    Use char because int might match the return type of a GCC
+@@ -14919,11 +14920,10 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ #ifdef __cplusplus
+ extern "C"
+ #endif
+-char zlibVersion (void);
+ int
+ main (void)
+ {
+-return zlibVersion ();
++return ZLIBNG_VERNUM;
+   ;
+   return 0;
+ }
+@@ -14946,21 +14946,23 @@ if test "x$ac_cv_lib_z_zlibVersion" = xyes
+ then :
+   printf "%s\n" "#define HAVE_LIBZ 1" >>confdefs.h
+ 
+-  LIBS="-lz $LIBS"
++  LIBS="-lz-ng $LIBS"
+ 
+ else case e in #(
+   e) as_ac_Lib=`printf "%s\n" "ac_cv_lib_z_${ZPREFIX}zlibVersion" | sed "$as_sed_sh"`
+-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for ${ZPREFIX}zlibVersion in -lz" >&5
+-printf %s "checking for ${ZPREFIX}zlibVersion in -lz... " >&6; }
++{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for ${ZPREFIX}zlibVersion in -lz-ng" >&5
++printf %s "checking for ${ZPREFIX}zlibVersion in -lz-ng... " >&6; }
+ if eval test \${$as_ac_Lib+y}
+ then :
+   printf %s "(cached) " >&6
+ else case e in #(
+   e) ac_check_lib_save_LIBS=$LIBS
+-LIBS="-lz  $LIBS"
++LIBS="-lz-ng  $LIBS"
+ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ /* end confdefs.h.  */
+ 
++#include <zlib-ng.h>
++
+ /* Override any GCC internal prototype to avoid an error.
+    Use char because int might match the return type of a GCC
+    builtin and then its argument prototype would still apply.
+@@ -14970,11 +14972,10 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ #ifdef __cplusplus
+ extern "C"
+ #endif
+-char ${ZPREFIX}zlibVersion (void);
+ int
+ main (void)
+ {
+-return ${ZPREFIX}zlibVersion ();
++return ZLIBNG_VERNUM;
+   ;
+   return 0;
+ }
+@@ -14998,7 +14999,7 @@ if eval test \"x\$"$as_ac_Lib"\" = x"yes"
+ then :
+   printf "%s\n" "#define HAVE_LIBZ 1" >>confdefs.h
+ 
+-  LIBS="-lz $LIBS"
++  LIBS="-lz-ng $LIBS"
+ 
+ else case e in #(
+   e) as_fn_error $? "zlib not installed" "$LINENO" 5 ;;
+diff --git a/contrib/libtests/pngvalid.c b/contrib/libtests/pngvalid.c
+index bddf321..44a9c99 100644
+--- a/contrib/libtests/pngvalid.c
++++ b/contrib/libtests/pngvalid.c
+@@ -56,7 +56,7 @@
+ #ifdef PNG_ZLIB_HEADER
+ #  include PNG_ZLIB_HEADER
+ #else
+-#  include <zlib.h>   /* For crc32 */
++#  include <zlib-ng.h>   /* For crc32 */
+ #endif
+ 
+ /* 1.6.1 added support for the configure test harness, which uses 77 to indicate
+@@ -1563,7 +1563,7 @@ store_read_chunk(png_store *ps, png_bytep pb, size_t max, size_t min)
+             }
+ 
+             IDAT_pos = 0U;
+-            ps->IDAT_crc = 0x35af061e; /* Ie: crc32(0UL, "IDAT", 4) */
++            ps->IDAT_crc = 0x35af061e; /* Ie: zng_crc32(0UL, "IDAT", 4) */
+          } /* IDAT_pos == IDAT_len */
+ 
+          if (IDAT_pos < 8U) /* Return the header */ do
+@@ -1603,7 +1603,7 @@ store_read_chunk(png_store *ps, png_bytep pb, size_t max, size_t min)
+                   avail = (uInt)/*SAFE*/((chunklen-4U) - chunkpos);
+ 
+                store_read_imp(ps, pb, avail);
+-               ps->IDAT_crc = crc32(ps->IDAT_crc, pb, avail);
++               ps->IDAT_crc = zng_crc32(ps->IDAT_crc, pb, avail);
+                pb += (size_t)/*SAFE*/avail;
+                st -= (size_t)/*SAFE*/avail;
+                chunkpos += (png_uint_32)/*SAFE*/avail;
+@@ -2975,7 +2975,7 @@ modifier_crc(png_bytep buffer)
+     * the buffer, at the start.
+     */
+    uInt datalen = png_get_uint_32(buffer);
+-   uLong crc = crc32(0, buffer+4, datalen+4);
++   uLong crc = zng_crc32(0, buffer+4, datalen+4);
+    /* The cast to png_uint_32 is safe because a crc32 is always a 32 bit value.
+     */
+    png_save_uint_32(buffer+datalen+8, (png_uint_32)crc);
+diff --git a/contrib/tools/png-fix-itxt.c b/contrib/tools/png-fix-itxt.c
+index b8286b9..f8c4af8 100644
+--- a/contrib/tools/png-fix-itxt.c
++++ b/contrib/tools/png-fix-itxt.c
+@@ -28,7 +28,7 @@
+  */
+ 
+ #include <stdio.h>
+-#include <zlib.h>
++#include <zlib-ng.h>
+ 
+ #define MAX_LENGTH 500000
+ 
+@@ -76,7 +76,7 @@ for (;;)
+          break;  /* To do: handle this more gracefully */
+ 
+       /* Initialize the CRC */
+-      crc = crc32(0, Z_NULL, 0);
++      crc = zng_crc32(0, Z_NULL, 0);
+ 
+       /* Copy the data bytes */
+       for (i=8; i < length + 12; i++)
+@@ -88,7 +88,7 @@ for (;;)
+          break;
+ 
+       /* Calculate the CRC */
+-      crc = crc32(crc, buf+4, (uInt)length+4);
++      crc = zng_crc32(crc, buf+4, (uInt)length+4);
+ 
+       for (;;)
+       {
+@@ -108,7 +108,7 @@ for (;;)
+         buf[length+11] = c;
+ 
+         /* Update the CRC */
+-        crc = crc32(crc, buf+7+length, 1);
++        crc = zng_crc32(crc, buf+7+length, 1);
+       }
+ 
+       if (inchar != c) /* EOF */
+diff --git a/contrib/tools/pngcp.c b/contrib/tools/pngcp.c
+index cf621fa..d064608 100644
+--- a/contrib/tools/pngcp.c
++++ b/contrib/tools/pngcp.c
+@@ -76,7 +76,7 @@
+ #include <unistd.h>
+ #include <sys/stat.h>
+ 
+-#include <zlib.h>
++#include <zlib-ng.h>
+ 
+ #ifndef PNG_SETJMP_SUPPORTED
+ #  include <setjmp.h> /* because png.h did *not* include this */
+diff --git a/contrib/tools/pngfix.c b/contrib/tools/pngfix.c
+index 3f0e334..bd896f8 100644
+--- a/contrib/tools/pngfix.c
++++ b/contrib/tools/pngfix.c
+@@ -42,7 +42,7 @@
+    (defined(PNG_READ_DEINTERLACE_SUPPORTED) ||\
+     defined(PNG_READ_INTERLACING_SUPPORTED))
+ 
+-/* zlib.h defines the structure z_stream, an instance of which is included
++/* zlib-ng.h defines the structure zng_stream, an instance of which is included
+  * in this structure and is required for decompressing the LZ compressed
+  * data in PNG files.
+  */
+@@ -50,29 +50,15 @@
+    /* We must ensure that zlib uses 'const' in declarations. */
+ #  define ZLIB_CONST
+ #endif
+-#include <zlib.h>
+-#ifdef const
+-   /* zlib.h sometimes #defines const to nothing, undo this. */
+-#  undef const
+-#endif
++#include <zlib-ng.h>
+ 
+-/* zlib.h has mediocre z_const use before 1.2.6, this stuff is for compatibility
+- * with older builds.
+- */
+-#if ZLIB_VERNUM < 0x1260
+-#  define PNGZ_MSG_CAST(s) constcast(char*,s)
+-#  define PNGZ_INPUT_CAST(b) constcast(png_bytep,b)
+-#else
+ #  define PNGZ_MSG_CAST(s) (s)
+ #  define PNGZ_INPUT_CAST(b) (b)
+-#endif
+ 
+ #ifndef PNG_MAXIMUM_INFLATE_WINDOW
+ #  error pngfix requires libpng with PNG_MAXIMUM_INFLATE_WINDOW supported
+ #endif
+ 
+-#if ZLIB_VERNUM >= 0x1240
+-
+ /* Copied from pngpriv.h */
+ #ifdef __cplusplus
+ #  define voidcast(type, value) static_cast<type>(value)
+@@ -2018,7 +2004,7 @@ struct zlib
+    int            cksum;                 /* Set on a checksum error */
+ 
+    /* PROTECTED ZLIB INFORMATION: USED BY THE ZLIB ROUTINES */
+-   z_stream       z;
++   zng_stream       z;
+    png_uint_32    extra_bytes;   /* Count of extra compressed bytes */
+    int            state;
+    int            rc;            /* Last return code */
+@@ -2146,7 +2132,7 @@ zlib_end(struct zlib *zlib)
+ 
+    if (zlib->state >= 0)
+    {
+-      zlib->rc = inflateEnd(&zlib->z);
++      zlib->rc = zng_inflateEnd(&zlib->z);
+ 
+       if (zlib->rc != Z_OK)
+          zlib_message(zlib, 1/*unexpected*/);
+@@ -2171,7 +2157,7 @@ zlib_reset(struct zlib *zlib, int window_bits)
+    zlib->uncompressed_digits = 0;
+ 
+    zlib->state = 0; /* initialized, once */
+-   zlib->rc = inflateReset2(&zlib->z, 0);
++   zlib->rc = zng_inflateReset2(&zlib->z, 0);
+    if (zlib->rc != Z_OK)
+    {
+       zlib_message(zlib, 1/*unexpected*/);
+@@ -2217,7 +2203,7 @@ zlib_init(struct zlib *zlib, struct IDAT *idat, struct chunk *chunk,
+    /* '0' means use the header; inflateInit2 should always succeed because it
+     * does nothing apart from allocating the internal zstate.
+     */
+-   zlib->rc = inflateInit2(&zlib->z, 0);
++   zlib->rc = zng_inflateInit2(&zlib->z, 0);
+    if (zlib->rc != Z_OK)
+    {
+       zlib_message(zlib, 1/*unexpected*/);
+@@ -2362,7 +2348,7 @@ zlib_advance(struct zlib *zlib, png_uint_32 nbytes)
+          zlib->z.avail_out = 1,
+          ++out_bytes)
+       {
+-         zlib->rc = inflate(&zlib->z, flush);
++         zlib->rc = zng_inflate(&zlib->z, flush);
+          out_bytes -= zlib->z.avail_out;
+ 
+          switch (zlib->rc)
+@@ -2411,7 +2397,7 @@ zlib_advance(struct zlib *zlib, png_uint_32 nbytes)
+                zlib_message(zlib, 0/*stream error*/);
+                endrc = ZLIB_FATAL;
+                break;
+-         } /* switch (inflate rc) */
++         } /* switch (zng_inflate rc) */
+ 
+          /* Control gets here when further output is not possible; endrc may
+           * still be ZLIB_OK if more input is required.
+@@ -2721,7 +2707,7 @@ zlib_check(struct file *file, png_uint_32 offset)
+             }
+          }
+ 
+-         else /* inflateReset2 failed */
++         else /* zng_inflateReset2 failed */
+          {
+             zlib_end(&zlib);
+             return 0;
+@@ -4016,16 +4002,6 @@ main(int argc, const char **argv)
+    return global_end(&global);
+ }
+ 
+-#else /* ZLIB_VERNUM < 0x1240 */
+-int
+-main(void)
+-{
+-   fprintf(stderr,
+-      "pngfix needs libpng with a zlib >=1.2.4 (not 0x%x)\n",
+-      ZLIB_VERNUM);
+-   return 77;
+-}
+-#endif /* ZLIB_VERNUM */
+ 
+ #else /* No read support */
+ 
+diff --git a/example.c b/example.c
+index 6af8f6f..8198561 100644
+--- a/example.c
++++ b/example.c
+@@ -41,7 +41,6 @@
+ #include <string.h>
+ #include <stdio.h>
+ #include <png.h>
+-#include <zlib.h>
+ 
+ int main(int argc, const char **argv)
+ {
+diff --git a/png.c b/png.c
+index 6e21915..570d4c4 100644
+--- a/png.c
++++ b/png.c
+@@ -133,7 +133,7 @@ void /* PRIVATE */
+ png_reset_crc(png_structrp png_ptr)
+ {
+    /* The cast is safe because the crc is a 32-bit value. */
+-   png_ptr->crc = (png_uint_32)crc32(0, Z_NULL, 0);
++   png_ptr->crc = (png_uint_32)zng_crc32(0, Z_NULL, 0);
+ }
+ 
+ /* Calculate the CRC over a section of data.  We can only pass as
+@@ -176,7 +176,7 @@ png_calculate_crc(png_structrp png_ptr, png_const_bytep ptr, size_t length)
+             safe_length = (uInt)-1; /* evil, but safe */
+ #endif
+ 
+-         crc = crc32(crc, ptr, safe_length);
++         crc = zng_crc32(crc, ptr, safe_length);
+ 
+          /* The following should never issue compiler warnings; if they do the
+           * target system has characteristics that will probably violate other
+@@ -977,7 +977,7 @@ png_reset_zstream(png_structrp png_ptr)
+       return Z_STREAM_ERROR;
+ 
+    /* WARNING: this resets the window bits to the maximum! */
+-   return inflateReset(&png_ptr->zstream);
++   return zng_inflateReset(&png_ptr->zstream);
+ }
+ #endif /* READ */
+ 
+diff --git a/pngpriv.h b/pngpriv.h
+index e3054b9..855f365 100644
+--- a/pngpriv.h
++++ b/pngpriv.h
+@@ -1020,22 +1020,6 @@
+ #include "pngstruct.h"
+ #include "pnginfo.h"
+ 
+-/* Validate the include paths - the include path used to generate pnglibconf.h
+- * must match that used in the build, or we must be using pnglibconf.h.prebuilt:
+- */
+-#if PNG_ZLIB_VERNUM != 0 && PNG_ZLIB_VERNUM != ZLIB_VERNUM
+-#  error The include path of <zlib.h> is incorrect
+-   /* When pnglibconf.h was built, the copy of zlib.h that it used was not the
+-    * same as the one being used here.  Considering how libpng makes decisions
+-    * to use the zlib API based on the zlib version number, the -I options must
+-    * match.
+-    *
+-    * A possible cause of this mismatch is that you passed an -I option in
+-    * CFLAGS, which is unlikely to work.  All the preprocessor options, and all
+-    * the -I options in particular, should be in CPPFLAGS.
+-    */
+-#endif
+-
+ /* This is used for 16-bit gamma tables -- only the top level pointers are
+  * const; this could be changed:
+  */
+@@ -1589,13 +1573,9 @@ PNG_INTERNAL_FUNCTION(void,png_read_finish_row,(png_structrp png_ptr),
+ /* Initialize the row buffers, etc. */
+ PNG_INTERNAL_FUNCTION(void,png_read_start_row,(png_structrp png_ptr),PNG_EMPTY);
+ 
+-#if ZLIB_VERNUM >= 0x1240
+ PNG_INTERNAL_FUNCTION(int,png_zlib_inflate,(png_structrp png_ptr, int flush),
+       PNG_EMPTY);
+ #  define PNG_INFLATE(pp, flush) png_zlib_inflate(pp, flush)
+-#else /* Zlib < 1.2.4 */
+-#  define PNG_INFLATE(pp, flush) inflate(&(pp)->zstream, flush)
+-#endif /* Zlib < 1.2.4 */
+ 
+ #ifdef PNG_READ_TRANSFORMS_SUPPORTED
+ /* Optional call to update the users info structure */
+diff --git a/pngread.c b/pngread.c
+index 212afb7..57bcd96 100644
+--- a/pngread.c
++++ b/pngread.c
+@@ -795,7 +795,7 @@ png_read_destroy(png_structrp png_ptr)
+    png_ptr->free_me &= ~PNG_FREE_TRNS;
+ #endif
+ 
+-   inflateEnd(&png_ptr->zstream);
++   zng_inflateEnd(&png_ptr->zstream);
+ 
+ #ifdef PNG_PROGRESSIVE_READ_SUPPORTED
+    png_free(png_ptr, png_ptr->save_buffer);
+diff --git a/pngrutil.c b/pngrutil.c
+index e7c7bbe..1148f13 100644
+--- a/pngrutil.c
++++ b/pngrutil.c
+@@ -446,7 +446,6 @@ png_inflate_claim(png_structrp png_ptr, png_uint_32 owner)
+     */
+    {
+       int ret; /* zlib return code */
+-#if ZLIB_VERNUM >= 0x1240
+       int window_bits = 0;
+ 
+ # if defined(PNG_SET_OPTION_SUPPORTED) && defined(PNG_MAXIMUM_INFLATE_WINDOW)
+@@ -463,7 +462,6 @@ png_inflate_claim(png_structrp png_ptr, png_uint_32 owner)
+       }
+ # endif
+ 
+-#endif /* ZLIB_VERNUM >= 0x1240 */
+ 
+       /* Set this for safety, just in case the previous owner left pointers to
+        * memory allocations.
+@@ -475,20 +473,12 @@ png_inflate_claim(png_structrp png_ptr, png_uint_32 owner)
+ 
+       if ((png_ptr->flags & PNG_FLAG_ZSTREAM_INITIALIZED) != 0)
+       {
+-#if ZLIB_VERNUM >= 0x1240
+-         ret = inflateReset2(&png_ptr->zstream, window_bits);
+-#else
+-         ret = inflateReset(&png_ptr->zstream);
+-#endif
++         ret = zng_inflateReset2(&png_ptr->zstream, window_bits);
+       }
+ 
+       else
+       {
+-#if ZLIB_VERNUM >= 0x1240
+-         ret = inflateInit2(&png_ptr->zstream, window_bits);
+-#else
+-         ret = inflateInit(&png_ptr->zstream);
+-#endif
++         ret = zng_inflateInit2(&png_ptr->zstream, window_bits);
+ 
+          if (ret == Z_OK)
+             png_ptr->flags |= PNG_FLAG_ZSTREAM_INITIALIZED;
+@@ -497,7 +487,7 @@ png_inflate_claim(png_structrp png_ptr, png_uint_32 owner)
+ #ifdef PNG_DISABLE_ADLER32_CHECK_SUPPORTED
+       if (((png_ptr->options >> PNG_IGNORE_ADLER32) & 3) == PNG_OPTION_ON)
+          /* Turn off validation of the ADLER32 checksum in IDAT chunks */
+-         ret = inflateValidate(&png_ptr->zstream, 0);
++         ret = zng_inflateValidate(&png_ptr->zstream, 0);
+ #endif
+ 
+       if (ret == Z_OK)
+@@ -514,7 +504,6 @@ png_inflate_claim(png_structrp png_ptr, png_uint_32 owner)
+ #endif
+ }
+ 
+-#if ZLIB_VERNUM >= 0x1240
+ /* Handle the start of the inflate stream if we called inflateInit2(strm,0);
+  * in this case some zlib versions skip validation of the CINFO field and, in
+  * certain circumstances, libpng may end up displaying an invalid image, in
+@@ -535,9 +524,8 @@ png_zlib_inflate(png_structrp png_ptr, int flush)
+       png_ptr->zstream_start = 0;
+    }
+ 
+-   return inflate(&png_ptr->zstream, flush);
++   return zng_inflate(&png_ptr->zstream, flush);
+ }
+-#endif /* Zlib >= 1.2.4 */
+ 
+ #ifdef PNG_READ_COMPRESSED_TEXT_SUPPORTED
+ #if defined(PNG_READ_zTXt_SUPPORTED) || defined (PNG_READ_iTXt_SUPPORTED)
+@@ -721,7 +709,7 @@ png_decompress_chunk(png_structrp png_ptr,
+              * with Z_FINISH in almost all cases, so the window will not be
+              * maintained.
+              */
+-            if (inflateReset(&png_ptr->zstream) == Z_OK)
++            if (zng_inflateReset(&png_ptr->zstream) == Z_OK)
+             {
+                /* Because of the limit checks above we know that the new,
+                 * expanded, size will fit in a size_t (let alone an
+diff --git a/pngstruct.h b/pngstruct.h
+index 084422b..ede8de3 100644
+--- a/pngstruct.h
++++ b/pngstruct.h
+@@ -16,32 +16,12 @@
+ 
+ #ifndef PNGSTRUCT_H
+ #define PNGSTRUCT_H
+-/* zlib.h defines the structure z_stream, an instance of which is included
+- * in this structure and is required for decompressing the LZ compressed
+- * data in PNG files.
+- */
+-#ifndef ZLIB_CONST
+-   /* We must ensure that zlib uses 'const' in declarations. */
+-#  define ZLIB_CONST
+-#endif
+-#include "zlib.h"
+-#ifdef const
+-   /* zlib.h sometimes #defines const to nothing, undo this. */
+-#  undef const
+-#endif
++#include "zlib-ng.h"
+ 
+-/* zlib.h has mediocre z_const use before 1.2.6, this stuff is for compatibility
+- * with older builds.
+- */
+-#if ZLIB_VERNUM < 0x1260
+-#  define PNGZ_MSG_CAST(s) png_constcast(char*,s)
+-#  define PNGZ_INPUT_CAST(b) png_constcast(png_bytep,b)
+-#else
+ #  define PNGZ_MSG_CAST(s) (s)
+ #  define PNGZ_INPUT_CAST(b) (b)
+-#endif
+ 
+-/* zlib.h declares a magic type 'uInt' that limits the amount of data that zlib
++/* zlib-ng.h declares a magic type 'uInt' that limits the amount of data that zlib
+  * can handle at once.  This type need be no larger than 16 bits (so maximum of
+  * 65535), this define allows us to discover how big it is, but limited by the
+  * maximum for size_t.  The value can be overridden in a library build
+@@ -159,7 +139,7 @@ struct png_struct_def
+    png_uint_32 transformations; /* which transformations to perform */
+ 
+    png_uint_32 zowner;        /* ID (chunk type) of zstream owner, 0 if none */
+-   z_stream    zstream;       /* decompression structure */
++   zng_stream    zstream;       /* decompression structure */
+ 
+ #ifdef PNG_WRITE_SUPPORTED
+    png_compression_bufferp zbuffer_list; /* Created on demand during write */
+@@ -247,9 +227,7 @@ struct png_struct_def
+                               /* pixel depth used for the row buffers */
+    png_byte transformed_pixel_depth;
+                               /* pixel depth after read/write transforms */
+-#if ZLIB_VERNUM >= 0x1240
+    png_byte zstream_start;    /* at start of an input zlib stream */
+-#endif /* Zlib >= 1.2.4 */
+ #if defined(PNG_READ_FILLER_SUPPORTED) || defined(PNG_WRITE_FILLER_SUPPORTED)
+    png_uint_16 filler;           /* filler bytes for pixel expansion */
+ #endif
+diff --git a/pngtest.c b/pngtest.c
+index 0c8e9fa..d262c94 100644
+--- a/pngtest.c
++++ b/pngtest.c
+@@ -39,7 +39,7 @@
+ #ifdef PNG_ZLIB_HEADER
+ #  include PNG_ZLIB_HEADER /* defined by pnglibconf.h from 1.7 */
+ #else
+-#  include <zlib.h>
++#  include <zlib-ng.h>
+ #endif
+ 
+ #include "png.h"
+@@ -1758,8 +1758,8 @@ test_one_file(const char *inname, const char *outname)
+                fprintf(STDERR,
+                    "\n   filtering heuristic (libpng default), compression");
+                fprintf(STDERR,
+-                   " level (zlib default),\n   and zlib version (%s)?\n\n",
+-                   ZLIB_VERSION);
++                   " level (zlib-ng default),\n   and zlib-ng version (%s)?\n\n",
++                   ZLIBNG_VERSION);
+                wrote_question = 1;
+             }
+ 
+@@ -1790,8 +1790,8 @@ test_one_file(const char *inname, const char *outname)
+                fprintf(STDERR,
+                    "\n   filtering heuristic (libpng default), compression");
+                fprintf(STDERR,
+-                   " level (zlib default),\n   and zlib version (%s)?\n\n",
+-                 ZLIB_VERSION);
++                   " level (zlib-ng default),\n   and zlib-ng version (%s)?\n\n",
++                 ZLIBNG_VERSION);
+                wrote_question = 1;
+             }
+ 
+@@ -1837,7 +1837,7 @@ main(int argc, char *argv[])
+    png_structp dummy_ptr;
+ 
+    fprintf(STDERR, "\n Testing libpng version %s\n", PNG_LIBPNG_VER_STRING);
+-   fprintf(STDERR, "   with zlib   version %s\n", ZLIB_VERSION);
++   fprintf(STDERR, "  with zlib-ng version %s\n", ZLIBNG_VERSION);
+    fprintf(STDERR, "%s", png_get_copyright(NULL));
+    /* Show the version of libpng used in building the library */
+    fprintf(STDERR, " library (%lu):%s",
+diff --git a/pngwrite.c b/pngwrite.c
+index 35a5d17..e200537 100644
+--- a/pngwrite.c
++++ b/pngwrite.c
+@@ -988,7 +988,7 @@ png_write_destroy(png_structrp png_ptr)
+ 
+    /* Free any memory zlib uses */
+    if ((png_ptr->flags & PNG_FLAG_ZSTREAM_INITIALIZED) != 0)
+-      deflateEnd(&png_ptr->zstream);
++      zng_deflateEnd(&png_ptr->zstream);
+ 
+    /* Free our memory.  png_free checks NULL for us. */
+    png_free_buffer_list(png_ptr, &png_ptr->zbuffer_list);
+diff --git a/pngwutil.c b/pngwutil.c
+index 863ffe8..7618e0b 100644
+--- a/pngwutil.c
++++ b/pngwutil.c
+@@ -409,7 +409,7 @@ png_deflate_claim(png_structrp png_ptr, png_uint_32 owner,
+          png_ptr->zlib_set_mem_level != memLevel ||
+          png_ptr->zlib_set_strategy != strategy))
+       {
+-         if (deflateEnd(&png_ptr->zstream) != Z_OK)
++         if (zng_deflateEnd(&png_ptr->zstream) != Z_OK)
+             png_warning(png_ptr, "deflateEnd failed (ignored)");
+ 
+          png_ptr->flags &= ~PNG_FLAG_ZSTREAM_INITIALIZED;
+@@ -427,11 +427,11 @@ png_deflate_claim(png_structrp png_ptr, png_uint_32 owner,
+        * do a simple reset to the previous parameters.
+        */
+       if ((png_ptr->flags & PNG_FLAG_ZSTREAM_INITIALIZED) != 0)
+-         ret = deflateReset(&png_ptr->zstream);
++         ret = zng_deflateReset(&png_ptr->zstream);
+ 
+       else
+       {
+-         ret = deflateInit2(&png_ptr->zstream, level, method, windowBits,
++         ret = zng_deflateInit2(&png_ptr->zstream, level, method, windowBits,
+              memLevel, strategy);
+ 
+          if (ret == Z_OK)
+@@ -594,7 +594,7 @@ png_text_compress(png_structrp png_ptr, png_uint_32 chunk_name,
+          }
+ 
+          /* Compress the data */
+-         ret = deflate(&png_ptr->zstream,
++         ret = zng_deflate(&png_ptr->zstream,
+              input_len > 0 ? Z_NO_FLUSH : Z_FINISH);
+ 
+          /* Claw back input data that was not consumed (because avail_in is
+@@ -995,7 +995,7 @@ png_compress_IDAT(png_structrp png_ptr, png_const_bytep input,
+       png_ptr->zstream.avail_in = avail;
+       input_len -= avail;
+ 
+-      ret = deflate(&png_ptr->zstream, input_len > 0 ? Z_NO_FLUSH : flush);
++      ret = zng_deflate(&png_ptr->zstream, input_len > 0 ? Z_NO_FLUSH : flush);
+ 
+       /* Include as-yet unconsumed input */
+       input_len += png_ptr->zstream.avail_in;
+-- 
+2.51.0
+
