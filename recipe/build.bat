@@ -39,3 +39,5 @@ if errorlevel 1 exit 1
 copy %LIBRARY_LIB%\libpng16_static.lib %LIBRARY_LIB%\png16_static.lib
 if errorlevel 1 exit 1
 
+copy %LIBRARY_LIB%\libpng.lib %LIBRARY_LIB%\png.lib
+if errorlevel 1 exit 1
