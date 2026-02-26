@@ -16,7 +16,7 @@ source:
     - patches/0002-Ensure-that-lm-is-not-included-in-Windows-pkg-config.patch
 
 build:
-  number: 0
+  number: 1
   skip:
     - win and vc<14
 
