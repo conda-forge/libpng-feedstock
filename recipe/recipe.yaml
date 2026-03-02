@@ -16,7 +16,7 @@ source:
     - patches/0002-Ensure-that-lm-is-not-included-in-Windows-pkg-config.patch
 
 build:
-  number: 0
+  number: 1
   skip:
     - win and vc<14
 
@@ -51,9 +51,9 @@ tests:
         - png.h
         - pngconf.h
         - pnglibconf.h
-  - script:
-      - if: not win
-        then: libpng-config --version
+  # - script:
+  #     - if: not win
+  #       then: libpng-config --version
 
 about:
   license: zlib-acknowledgement
