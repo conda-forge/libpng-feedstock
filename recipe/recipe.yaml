@@ -40,6 +40,9 @@ requirements:
 
 tests:
   - package_contents:
+      files:
+        - if: win
+          then: Library/lib/png.lib
       lib:
         - if: win
           then: libpng${{ short_version }}
