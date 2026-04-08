@@ -1,7 +1,7 @@
 schema_version: 1
 
 context:
-  version: "1.6.56"
+  version: "1.6.57"
   short_version: ${{ (version|split('.'))[0:2]|join }}
 
 package:
@@ -10,7 +10,7 @@ package:
 
 source:
   url: https://downloads.sourceforge.net/project/libpng/libpng${{ short_version }}/${{ version }}/libpng-${{ version }}.tar.gz
-  sha256: 8f91e941a07fb1069ebb3855278f82a849e6af14ca05821e14ec3d5348697ea5
+  sha256: 01fdab044cdc575c74a9ef62a4042fbe24fea8bedfe8aa5c89f4467b781bbb60
   patches:
     - patches/0001-Include-pkg-config-files-in-the-Windows-packages-too.patch
     - patches/0002-Ensure-that-lm-is-not-included-in-Windows-pkg-config.patch
